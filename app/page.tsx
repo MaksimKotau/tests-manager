@@ -1,7 +1,9 @@
 import Image from "next/image";
 import styles from "./page.module.css";
+import { queryDatabase } from "./backend/dbConnection";
 
-export default function Home() {
+export default async function Home() {
+  const data = await queryDatabase();
   return (
     <div className={styles.page}>
       <main className={styles.main}>
@@ -14,6 +16,7 @@ export default function Home() {
           priority
         />
         <ol>
+          <li>TEST-RUNNER</li>
           <li>
             Get started by editing <code>app/page.tsx</code>.
           </li>
@@ -93,3 +96,4 @@ export default function Home() {
     </div>
   );
 }
+

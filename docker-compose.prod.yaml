@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  web:
+    container_name: web
+    build:
+      context: .
+      dockerfile: Dockerfile.web  # Specify the Dockerfile for the web service
+      target: prod
+    restart: always
+    ports:
+      - 80:3000  # Expose port 80 for the web app
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}      # Load from environment variable
+      - DB_PASSWORD=${DB_PASSWORD}  # Load from environment variable
+      - DB_NAME=${DB_NAME}      # Load from environment variable
+    depends_on:
+      - db  # Ensure the web service waits for the db service to start
+
+  db:
+    container_name: db
+    build:
+      context: .
+      dockerfile: Dockerfile.db  # Specify the Dockerfile for the MariaDB service
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}  # Load from environment variable
+      - MYSQL_DATABASE=${DB_NAME}  # Load from environment variable
+      - MYSQL_USER=${DB_USER}  # Load from environment variable
+      - MYSQL_PASSWORD=${DB_PASSWORD}  # Load from environment variable
+    ports:
+      - 3306:3306  # Expose MariaDB on the default MySQL port
+    volumes:
+      - mariadb_data:/var/lib/mysql  # Volume for persisting MariaDB data

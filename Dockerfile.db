@@ -1,0 +1,5 @@
+# Use the official MariaDB image from Docker Hub
+FROM mariadb:10.5.26
+
+# Expose the default MariaDB port
+EXPOSE 3306

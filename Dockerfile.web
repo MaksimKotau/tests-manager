@@ -1,0 +1,100 @@
+# Use AlmaLinux 9 as the base image
+FROM almalinux:9
+
+# Install necessary dependencies for NVM, Node.js, and other utilities
+RUN dnf -y update && \
+    dnf -y install wget vim git bash openssh-clients && \
+    dnf clean all
+
+# Install NVM (latest version)
+ENV NVM_DIR=/root/.nvm
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+
+# Install Node.js v22 using NVM
+RUN bash -c ". $NVM_DIR/nvm.sh && nvm install 22 && nvm use 22 && nvm alias default 22"
+
+# Export NVM and Node.js to PATH so they are available in future sessions
+ENV PATH=$NVM_DIR/versions/node/v22.0.0/bin:$PATH
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Install dependencies and copying source code during build
+COPY package.json ./
+RUN bash -c ". $NVM_DIR/nvm.sh && npm install"
+# **********
+# base stage
+# **********
+FROM almalinux:9 AS base
+
+# Install necessary dependencies for NVM, Node.js, and development utilities
+RUN dnf -y update && \
+    dnf -y install wget git bash openssh-clients && \
+    dnf clean all
+
+# Install NVM (latest version)
+ENV NVM_DIR=/root/.nvm
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+
+# Install Node.js v22 using NVM
+RUN bash -c ". $NVM_DIR/nvm.sh && nvm install 22 && nvm use 22 && nvm alias default 22"
+
+# Export NVM and Node.js to PATH so they are available in future sessions
+ENV PATH=$NVM_DIR/versions/node/v22.0.0/bin:$PATH
+
+WORKDIR /app
+
+# **********
+# deps stage
+# **********
+FROM base AS deps
+
+# Copy package.json and lockfiles
+COPY package.json ./ 
+
+# Copy lock files if available
+COPY package-lock.json* yarn.lock* pnpm-lock.yaml* ./ 
+
+# Install dependencies based on the lockfile
+RUN bash -c ". $NVM_DIR/nvm.sh && npm install"
+
+# Disable Next.js telemetry
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# ***********
+# inter stage
+# ***********
+FROM deps AS inter
+
+# Copy the rest of the application files to the container
+COPY . .
+
+# Expose the application's port
+EXPOSE 3000
+
+# **********
+# prod stage
+# **********
+FROM inter AS prod
+
+# Build the application for production
+RUN npm run build
+
+# Run the application in production mode
+CMD ["npm", "start"]
+
+# **********
+# dev stage
+# **********
+FROM inter AS dev
+
+# Command to start Next.js in development mode (enables live reload)
+CMD ["npm", "run", "dev"]
+COPY . .
+
+# Expose the port that the application will run on
+EXPOSE 3000
+
+# Start the application when the container starts (ensure NVM is sourced)
+CMD bash -c ". $NVM_DIR/nvm.sh && npm run dev"
+

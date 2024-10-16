@@ -20,7 +20,6 @@ This project is a **Scripts Manager** designed to create and manage simple pipel
 2. Open the `.env` file and set values for the environment variables without quotes. Example:
 
     ```bash
-    DB_HOST=mariadb
     DB_USER=user
     DB_PASSWORD=password
     DB_NAME=tests_runner

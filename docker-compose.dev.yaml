@@ -10,7 +10,7 @@ services:
     restart: always
     environment:
       NODE_ENV: development
-      DB_HOST: ${DB_HOST}
+      DB_HOST: mariadb
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
@@ -20,11 +20,11 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - db
+      - mariadb
     networks:
       - app-network
 
-  db:
+  mariadb:
     container_name: mariadb
     build:
       context: .

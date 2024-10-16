@@ -11,15 +11,15 @@ services:
       - 80:3000  # Expose port 80 for the web app
     environment:
       - NODE_ENV=production
-      - DB_HOST=${DB_HOST}
+      - DB_HOST=mariadb
       - DB_USER=${DB_USER}      # Load from environment variable
       - DB_PASSWORD=${DB_PASSWORD}  # Load from environment variable
       - DB_NAME=${DB_NAME}      # Load from environment variable
     depends_on:
-      - db  # Ensure the web service waits for the db service to start
+      - mariadb  # Ensure the web service waits for the db service to start
 
-  db:
-    container_name: db
+  mariadb:
+    container_name: mariadb
     build:
       context: .
       dockerfile: Dockerfile.db  # Specify the Dockerfile for the MariaDB service
